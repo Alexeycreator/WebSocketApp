@@ -17,6 +17,8 @@ public class SettingsServer
     private DateTime timeWorkingDateEnd = DateTime.Today.AddHours(22);
     private ServerConfig config;
     private TcpListener tcpListener;
+    private List<ResponseDataModel> responseDatas = new List<ResponseDataModel>();
+    private List<CopyingDataModel> copyingDatas = new List<CopyingDataModel>();
 
     public SettingsServer(IConfiguration _configuration)
     {
@@ -139,8 +141,8 @@ public class SettingsServer
                 List<BankModel> processedData = await Task.Run(() =>
                 {
                     CalculationData calculationData =
-                        new CalculationData(/*responseDatas, copyingDataModels, csvWriter*/);
-                    return calculationData.ProcessData(/*receivedData*/);
+                        new CalculationData(responseDatas, copyingDatas /*, csvWriter*/);
+                    return calculationData.ProcessData(receivedData);
                 });
                 loggerSettingsServer.Info($"Данные обработаны.");
                 string responseJson = JsonConvert.SerializeObject(processedData);
