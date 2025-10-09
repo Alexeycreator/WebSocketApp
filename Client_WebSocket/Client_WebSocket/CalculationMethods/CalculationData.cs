@@ -18,17 +18,19 @@ namespace Client_WebSocket.CalculationMethods
         private List<BankModel> bankDatas = new List<BankModel>();
         private BankParser bankParser = new BankParser();
         private DefaultParser defaultParser = new DefaultParser();
+        private bool connected;
 
         public CalculationData()
         {
         }
 
-        public CalculationData(int sleep, DateTime timeStart, DateTime timeEnd)
+        public CalculationData(int sleep, DateTime timeStart, DateTime timeEnd, bool isConnected)
         {
             sleepTime = sleep;
             timeWorkingDateStart = timeStart;
             timeWorkingDateEnd = timeEnd;
             settingsClient = new SettingsClient();
+            connected = isConnected;
         }
 
         public void DataCreation()
@@ -45,7 +47,9 @@ namespace Client_WebSocket.CalculationMethods
                         for (int i = 1; i <= totalHours; i++)
                         {
                             loggerCalculationData.Info($"Получение данных {i} из {totalHours}");
-                            var parserData = defaultParser.GetDefaultValue();
+                            var parserData =
+                                connected ? bankParser.CentralBankParser() : defaultParser.GetDefaultValue();
+
                             if (parserData.Count > 0)
                             {
                                 loggerCalculationData.Info($"Данные {i} запроса успешно получены");
@@ -70,14 +74,6 @@ namespace Client_WebSocket.CalculationMethods
             catch (ArgumentException ex)
             {
                 loggerCalculationData.Error($"{ex.Message}");
-                /*var exParser = bankDatas.Add(new BankModel()
-                {
-                    DigitalCode = "0",
-                    LetterCode = "Default",
-                    Currency = "Default",
-                    Units = "0",
-                    Rate = "0"
-                });*/
             }
             catch (Exception ex)
             {

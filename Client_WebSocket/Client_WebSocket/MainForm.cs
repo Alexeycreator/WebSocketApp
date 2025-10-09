@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,6 +18,9 @@ namespace Client_WebSocket
     {
         private Logger loggerMainForm = LogManager.GetCurrentClassLogger();
         private CalculationData calcData;
+        private int sleepTime;
+        private DateTime timeWorkingDateStart = DateTime.Today.AddHours(8);
+        private DateTime timeWorkingDateEnd = DateTime.Today.AddHours(17);
 
         public MainForm()
         {
@@ -44,8 +48,21 @@ namespace Client_WebSocket
             {
                 try
                 {
-                    calcData = new CalculationData(3000, DateTime.Today.AddHours(8), DateTime.Today.AddHours(17));
-                    calcData.DataCreation();
+                    bool isConnected = false;
+                    if (CheckInternetConnection())
+                    {
+                        isConnected = true;
+                        sleepTime = 180000;
+                        calcData = new CalculationData(sleepTime, timeWorkingDateStart, timeWorkingDateEnd, isConnected);
+                        calcData.DataCreation();
+                    }
+                    else
+                    {
+                        isConnected = false;
+                        sleepTime = 30000;
+                        calcData = new CalculationData(sleepTime, timeWorkingDateStart, timeWorkingDateEnd, isConnected);
+                        calcData.DataCreation();
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -54,6 +71,22 @@ namespace Client_WebSocket
             });
 
             parserThread.Start();
+        }
+
+        private static bool CheckInternetConnection()
+        {
+            try
+            {
+                using (var ping = new Ping())
+                {
+                    var reply = ping.Send("8.8.8.8", 3000); // Google DNS, таймаут 3 секунды
+                    return reply.Status == IPStatus.Success;
+                }
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }
