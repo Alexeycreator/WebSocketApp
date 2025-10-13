@@ -51,9 +51,12 @@ public class SettingsServer
                 loggerSettingsServer.Info($"Сервер запущен по ip:{ip} port:{port}");
                 Console.WriteLine($"Ожидание подключений...");
                 loggerSettingsServer.Info($"Создание отдельного потока для клиента");
-                Thread incommingThread = new Thread(() => { IncommingConnection(tcpListener); });
-                incommingThread.Start();
-                CheckClosedServer();
+                Thread incomingThread = new Thread(() => { IncomingConnection(tcpListener); });
+                incomingThread.Start();
+                Console.ReadKey();
+                tcpListener.Stop();
+                loggerSettingsServer.Info("Сервер остановлен.");
+                //CheckClosedServer();
             }
         }
         catch (ArgumentOutOfRangeException ex)
@@ -68,7 +71,7 @@ public class SettingsServer
         }
     }
 
-    private void IncommingConnection(TcpListener tcpListener)
+    private void IncomingConnection(TcpListener tcpListener)
     {
         try
         {
@@ -92,7 +95,7 @@ public class SettingsServer
         try
         {
             using (client)
-            using (NetworkStream stream = client.GetStream())
+            await using (NetworkStream stream = client.GetStream())
             {
                 loggerSettingsServer.Info($"Считывание данных от {client.Client.RemoteEndPoint}");
                 string receivedData;
@@ -159,24 +162,5 @@ public class SettingsServer
         {
             loggerSettingsServer.Error($"{ex.Message}");
         }
-    }
-
-    private void CheckClosedServer()
-    {
-        Thread checkCloseServerThread = new Thread(() =>
-        {
-            while (true)
-            {
-                if (DateTime.Now >= timeWorkingDateEnd)
-                {
-                    tcpListener.Stop();
-                    loggerSettingsServer.Info($"Сервер остановлен.");
-                    break;
-                }
-
-                Thread.Sleep(TimeSpan.FromMinutes(config.SleepTimeCheckedClosed));
-            }
-        });
-        checkCloseServerThread.Start();
     }
 }

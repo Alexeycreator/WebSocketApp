@@ -76,7 +76,7 @@ namespace Client_WebSocket
                     bool isConnected = CheckInternetConnection();
                     if (isConnected)
                     {
-                        sleepTime = 3000;
+                        sleepTime = 180000;
                         calcData = new CalculationData(sleepTime, timeWorkingDateStart, timeWorkingDateEnd,
                             true);
                         calcData.DataResponse += OnDataResponse;

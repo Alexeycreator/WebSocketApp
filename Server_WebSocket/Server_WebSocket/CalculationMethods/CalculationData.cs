@@ -10,7 +10,7 @@ public class CalculationData
     private Logger loggerCalculationData = LogManager.GetCurrentClassLogger();
     private static string dateGetRate = DateTime.Now.ToShortDateString();
 
-    private readonly string csvFilePath =
+    private readonly string csvFilePathDir =
         Path.Combine(Directory.GetCurrentDirectory(), "CentralBank", $"{dateGetRate}");
 
     private CsvWriter csvWriter = new CsvWriter();
@@ -22,17 +22,17 @@ public class CalculationData
     {
         responseDatas = respData;
         copyingDatas = copData;
-        if (!Directory.Exists(csvFilePath))
+        if (!Directory.Exists(csvFilePathDir))
         {
-            Directory.CreateDirectory(csvFilePath);
+            Directory.CreateDirectory(csvFilePathDir);
         }
 
-        string dateTimeNowRate = DateTime.Now.ToString("HH:mm");
+        string dateTimeNowRate = DateTime.Now.ToShortTimeString();
         string fileNameRate = $"Rate_{dateTimeNowRate}.csv";
-        csvFilePath = Path.Combine(csvFilePath, fileNameRate);
-        if (!File.Exists(csvFilePath))
+        csvFilePathDir = Path.Combine(csvFilePathDir, fileNameRate);
+        if (!File.Exists(csvFilePathDir))
         {
-            File.Create(csvFilePath).Close();
+            File.Create(csvFilePathDir).Close();
         }
     }
 
@@ -42,7 +42,7 @@ public class CalculationData
         {
             var coming = JsonConvert.DeserializeObject<List<BankModel>>(data);
             loggerCalculationData.Info("Запись данных приходящего файла.");
-            csvWriter.Write(csvFilePath, coming);
+            csvWriter.Write(csvFilePathDir, coming);
             loggerCalculationData.Info("Запись данных успешно выполнена.");
             loggerCalculationData.Info($"Преобразование полученных данных для отправки.");
             responseDatas = coming.Select(bankItem => new ResponseDataModel()

@@ -47,29 +47,24 @@ namespace Client_WebSocket.CentralBank
             loggerDefaultParser.Info("Процесс получения имитированных курсов валют запущен...");
             try
             {
-                if (digitalCode == null)
+                digitalCode = new int[letterCodes.Length];
+                for (int i = 0; i < letterCodes.Length; i++)
                 {
-                    digitalCode = new int[letterCodes.Length];
-                    for (int i = 0; i < letterCodes.Length; i++)
+                    digitalCode[i] = random.Next(000, 999);
+                    for (int j = 0; j < i; j++)
                     {
-                        digitalCode[i] = random.Next(000, 999);
-                        for (int j = 0; j < i; j++)
+                        if (digitalCode[j] == digitalCode[i])
                         {
-                            if (digitalCode[j] == digitalCode[i])
-                            {
-                                digitalCode[i] = random.Next(000, 999);
-                            }
+                            digitalCode[i] = random.Next(000, 999);
                         }
                     }
                 }
 
-                if (units == null)
+
+                units = new int[letterCodes.Length];
+                for (int i = 0; i < letterCodes.Length; i++)
                 {
-                    units = new int[letterCodes.Length];
-                    for (int i = 0; i < letterCodes.Length; i++)
-                    {
-                        units[i] = random.Next(1, 2);
-                    }
+                    units[i] = random.Next(1, 2);
                 }
 
                 double[] rate = new double[letterCodes.Length];
