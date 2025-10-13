@@ -35,6 +35,8 @@
             this.chartPrintData = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.cmbxVariableData = new System.Windows.Forms.ComboBox();
             this.chbxSeriesGraph = new System.Windows.Forms.CheckedListBox();
+            this.btnCheckedAll = new System.Windows.Forms.Button();
+            this.btnUnCheckedAll = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.chartPrintData)).BeginInit();
             this.SuspendLayout();
             // 
@@ -50,7 +52,7 @@
             series1.Legend = "Legend1";
             series1.Name = "Series1";
             this.chartPrintData.Series.Add(series1);
-            this.chartPrintData.Size = new System.Drawing.Size(689, 488);
+            this.chartPrintData.Size = new System.Drawing.Size(967, 652);
             this.chartPrintData.TabIndex = 0;
             this.chartPrintData.Text = "chart1";
             // 
@@ -68,16 +70,40 @@
             // 
             this.chbxSeriesGraph.Font = new System.Drawing.Font("Times New Roman", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.chbxSeriesGraph.FormattingEnabled = true;
-            this.chbxSeriesGraph.Location = new System.Drawing.Point(707, 45);
+            this.chbxSeriesGraph.Location = new System.Drawing.Point(985, 12);
             this.chbxSeriesGraph.Name = "chbxSeriesGraph";
-            this.chbxSeriesGraph.Size = new System.Drawing.Size(182, 488);
+            this.chbxSeriesGraph.Size = new System.Drawing.Size(182, 576);
             this.chbxSeriesGraph.TabIndex = 3;
+            // 
+            // btnCheckedAll
+            // 
+            this.btnCheckedAll.Font = new System.Drawing.Font("Times New Roman", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.btnCheckedAll.Location = new System.Drawing.Point(985, 593);
+            this.btnCheckedAll.Name = "btnCheckedAll";
+            this.btnCheckedAll.Size = new System.Drawing.Size(182, 49);
+            this.btnCheckedAll.TabIndex = 4;
+            this.btnCheckedAll.Text = "Выделить все серии";
+            this.btnCheckedAll.UseVisualStyleBackColor = true;
+            this.btnCheckedAll.Click += new System.EventHandler(this.btnCheckedAll_Click);
+            // 
+            // btnUnCheckedAll
+            // 
+            this.btnUnCheckedAll.Font = new System.Drawing.Font("Times New Roman", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.btnUnCheckedAll.Location = new System.Drawing.Point(985, 648);
+            this.btnUnCheckedAll.Name = "btnUnCheckedAll";
+            this.btnUnCheckedAll.Size = new System.Drawing.Size(182, 49);
+            this.btnUnCheckedAll.TabIndex = 5;
+            this.btnUnCheckedAll.Text = "Снять выделение со всех серий";
+            this.btnUnCheckedAll.UseVisualStyleBackColor = true;
+            this.btnUnCheckedAll.Click += new System.EventHandler(this.btnUnCheckedAll_Click);
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(898, 541);
+            this.ClientSize = new System.Drawing.Size(1179, 709);
+            this.Controls.Add(this.btnUnCheckedAll);
+            this.Controls.Add(this.btnCheckedAll);
             this.Controls.Add(this.chbxSeriesGraph);
             this.Controls.Add(this.cmbxVariableData);
             this.Controls.Add(this.chartPrintData);
@@ -88,6 +114,12 @@
             this.ResumeLayout(false);
         }
 
+        private System.Windows.Forms.Button btnUnCheckedAll;
+
+        private System.Windows.Forms.Button button1;
+
+        private System.Windows.Forms.Button btnCheckedAll;
+        
         private System.Windows.Forms.ComboBox cmbxVariableData;
         private System.Windows.Forms.CheckedListBox chbxSeriesGraph;
 

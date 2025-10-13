@@ -21,6 +21,7 @@ namespace Client_WebSocket
         private int sleepTime;
         private DateTime timeWorkingDateStart = DateTime.Today.AddHours(8);
         private DateTime timeWorkingDateEnd = DateTime.Today.AddHours(17);
+        private int countElements = 0;
 
         public MainForm()
         {
@@ -34,7 +35,7 @@ namespace Client_WebSocket
 
         private void InitElements()
         {
-            cmbxVariableData.Items.Add("Данные по умолчанию");
+            cmbxVariableData.Items.Add("Получение данных");
         }
 
         private void cmbxVariableData_SelectedIndexChanged(object sender, EventArgs e)
@@ -48,19 +49,19 @@ namespace Client_WebSocket
             {
                 try
                 {
-                    bool isConnected = false;
-                    if (CheckInternetConnection())
+                    bool isConnected = CheckInternetConnection();
+                    if (isConnected)
                     {
-                        isConnected = true;
                         sleepTime = 180000;
-                        calcData = new CalculationData(sleepTime, timeWorkingDateStart, timeWorkingDateEnd, isConnected);
+                        calcData = new CalculationData(sleepTime, timeWorkingDateStart, timeWorkingDateEnd,
+                            true);
                         calcData.DataCreation();
                     }
                     else
                     {
-                        isConnected = false;
                         sleepTime = 30000;
-                        calcData = new CalculationData(sleepTime, timeWorkingDateStart, timeWorkingDateEnd, isConnected);
+                        calcData = new CalculationData(sleepTime, timeWorkingDateStart, timeWorkingDateEnd,
+                            false);
                         calcData.DataCreation();
                     }
                 }
@@ -87,6 +88,26 @@ namespace Client_WebSocket
             {
                 return false;
             }
+        }
+
+        private void btnCheckedAll_Click(object sender, EventArgs e)
+        {
+            for (int i = 0; i < countElements; i++)
+            {
+                chbxSeriesGraph.SetItemCheckState(i, CheckState.Checked);
+            }
+
+            loggerMainForm.Info($"Добавлено выделение для всех элементов на графике");
+        }
+
+        private void btnUnCheckedAll_Click(object sender, EventArgs e)
+        {
+            for (int i = 0; i < countElements; i++)
+            {
+                chbxSeriesGraph.SetItemCheckState(i, CheckState.Unchecked);
+            }
+
+            loggerMainForm.Info($"Снято выделение со всех элементов на графике");
         }
     }
 }

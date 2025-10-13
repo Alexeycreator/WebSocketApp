@@ -31,12 +31,12 @@ public class SettingsServer
         Console.WriteLine($"Запуск сервера.");
         try
         {
-            if (DateTime.Now <= timeWorkingDateStart)
+            if (DateTime.Now < timeWorkingDateStart)
             {
                 throw new ArgumentOutOfRangeException(
                     $"Приложение запускается не раньше {timeWorkingDateStart} по МСК");
             }
-            else if (DateTime.Now >= timeWorkingDateEnd)
+            else if (DateTime.Now > timeWorkingDateEnd)
             {
                 throw new ArgumentOutOfRangeException(
                     $"Приложение работает до {timeWorkingDateEnd} по МСК");
@@ -92,9 +92,6 @@ public class SettingsServer
         try
         {
             using (client)
-            {
-            }
-
             using (NetworkStream stream = client.GetStream())
             {
                 loggerSettingsServer.Info($"Считывание данных от {client.Client.RemoteEndPoint}");
