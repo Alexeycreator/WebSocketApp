@@ -69,24 +69,26 @@ namespace Client_WebSocket
 
         private void ParserThread()
         {
-            Thread parserThread = new Thread(() =>
+            Task.Run(async () =>
             {
                 try
                 {
                     bool isConnected = CheckInternetConnection();
                     if (isConnected)
                     {
-                        sleepTime = 180000;
+                        sleepTime = 3000;
                         calcData = new CalculationData(sleepTime, timeWorkingDateStart, timeWorkingDateEnd,
                             true);
-                        calcData.DataCreation();
+                        calcData.DataResponse += OnDataResponse;
+                        await calcData.DataCreationAsync();
                     }
                     else
                     {
                         sleepTime = 30000;
                         calcData = new CalculationData(sleepTime, timeWorkingDateStart, timeWorkingDateEnd,
                             false);
-                        calcData.DataCreation();
+                        calcData.DataResponse += OnDataResponse;
+                        await calcData.DataCreationAsync();
                     }
                 }
                 catch (Exception ex)
@@ -94,8 +96,6 @@ namespace Client_WebSocket
                     loggerMainForm.Error($"{ex.Message}");
                 }
             });
-
-            parserThread.Start();
         }
 
         private static bool CheckInternetConnection()

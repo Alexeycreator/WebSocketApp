@@ -14,7 +14,7 @@ public class SettingsServer
     private Logger loggerSettingsServer = LogManager.GetCurrentClassLogger();
     private string timeNow = DateTime.Now.ToShortDateString();
     private DateTime timeWorkingDateStart = DateTime.Today.AddHours(8);
-    private DateTime timeWorkingDateEnd = DateTime.Today.AddHours(22);
+    private DateTime timeWorkingDateEnd = DateTime.Today.AddHours(24);
     private ServerConfig config;
     private TcpListener tcpListener;
     private List<ResponseDataModel> responseDatas = new List<ResponseDataModel>();

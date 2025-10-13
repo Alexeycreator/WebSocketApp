@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
+using System.Threading.Tasks;
 using Client_WebSocket.CentralBank;
 using Client_WebSocket.Models;
 using NLog;
@@ -19,6 +20,8 @@ namespace Client_WebSocket.CalculationMethods
         private BankParser bankParser = new BankParser();
         private DefaultParser defaultParser = new DefaultParser();
         private bool connected;
+        public event Action<List<ResponseBankModel>> DataResponse;
+
 
         public CalculationData()
         {
@@ -33,18 +36,18 @@ namespace Client_WebSocket.CalculationMethods
             connected = isConnected;
         }
 
-        public void DataCreation()
+        public async Task DataCreationAsync()
         {
             try
             {
-                TimeSpan workHours = timeWorkingDateEnd - timeWorkingDateStart;
-                int totalHours = (int)workHours.TotalHours;
+                var workHours = timeWorkingDateEnd - timeWorkingDateStart;
+                var totalHours = (int)workHours.TotalHours;
                 if (DateTime.Now >= timeWorkingDateStart && DateTime.Now <= timeWorkingDateEnd)
                 {
-                    Thread parserThread = new Thread(() =>
+                    await Task.Run(async () =>
                     {
                         loggerCalculationData.Info($"Запуск потока парсера данных");
-                        for (int i = 1; i <= totalHours; i++)
+                        for (var i = 1; i <= totalHours; i++)
                         {
                             loggerCalculationData.Info($"Получение данных {i} из {totalHours}");
                             var parserData =
@@ -53,27 +56,29 @@ namespace Client_WebSocket.CalculationMethods
                             if (parserData.Count > 0)
                             {
                                 loggerCalculationData.Info($"Данные {i} запроса успешно получены");
+
+                                if (i < totalHours)
+                                {
+                                    var stopwatch = Stopwatch.StartNew();
+                                    await Task.Delay(sleepTime);
+                                    stopwatch.Stop();
+                                    loggerCalculationData.Info(
+                                        $"Задержка в {stopwatch.Elapsed} между получениями данных");
+                                }
+
+                                loggerCalculationData.Info($"Тут");
                             }
                             else
                             {
-                                throw new ArgumentOutOfRangeException($"Данных нет.");
-                            }
-
-                            if (i < totalHours)
-                            {
-                                var stopwatch = Stopwatch.StartNew();
-                                Thread.Sleep(sleepTime);
-                                stopwatch.Stop();
-                                loggerCalculationData.Info($"Задержка в {stopwatch.Elapsed} между получениями данных");
+                                loggerCalculationData.Warn($"Данных нет для итерации {i}");
+                                if (i < totalHours)
+                                {
+                                    await Task.Delay(sleepTime);
+                                }
                             }
                         }
                     });
-                    parserThread.Start();
                 }
-            }
-            catch (ArgumentException ex)
-            {
-                loggerCalculationData.Error($"{ex.Message}");
             }
             catch (Exception ex)
             {
