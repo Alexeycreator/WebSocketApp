@@ -27,7 +27,7 @@ public class CalculationData
             Directory.CreateDirectory(csvFilePathDir);
         }
 
-        string dateTimeNowRate = DateTime.Now.ToShortTimeString();
+        string dateTimeNowRate = DateTime.Now.ToString("HH-mm");
         string fileNameRate = $"Rate_{dateTimeNowRate}.csv";
         csvFilePathDir = Path.Combine(csvFilePathDir, fileNameRate);
         if (!File.Exists(csvFilePathDir))
