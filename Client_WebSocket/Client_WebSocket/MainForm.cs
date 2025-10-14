@@ -55,6 +55,13 @@ namespace Client_WebSocket
         private void MainForm_Load(object sender, EventArgs e)
         {
             InitElements();
+            ClearElements();
+        }
+        
+        private void ClearElements()
+        {
+            chartPrintData.Series.Clear();
+            chbxSeriesGraph.Items.Clear();
         }
 
         private void InitElements()
@@ -76,7 +83,7 @@ namespace Client_WebSocket
                     bool isConnected = CheckInternetConnection();
                     if (isConnected)
                     {
-                        sleepTime = 180000;
+                        sleepTime = 1800000;
                         calcData = new CalculationData(sleepTime, timeWorkingDateStart, timeWorkingDateEnd,
                             true);
                         calcData.DataResponse += OnDataResponse;
@@ -84,7 +91,7 @@ namespace Client_WebSocket
                     }
                     else
                     {
-                        sleepTime = 30000;
+                        sleepTime = 300000;
                         calcData = new CalculationData(sleepTime, timeWorkingDateStart, timeWorkingDateEnd,
                             false);
                         calcData.DataResponse += OnDataResponse;
@@ -150,6 +157,7 @@ namespace Client_WebSocket
         {
             try
             {
+                SettingsChart();
                 if (DateTime.Now >= timeWorkingDateStart && DateTime.Now <= timeWorkingDateEnd)
                 {
                     countElements = _responseModels.Count;
@@ -177,6 +185,7 @@ namespace Client_WebSocket
                             Enabled = true,
                             IsXValueIndexed = false,
                             IsValueShownAsLabel = true,
+                            XValueType = ChartValueType.DateTime
                         };
                         chartPrintData.Series.Add(series);
                         chbxSeriesGraph.Items.Add(name, true);
@@ -201,7 +210,6 @@ namespace Client_WebSocket
                         loggerMainForm.Info($"Отрисована точка {xValue} со значением {yValue}");
                     }
 
-                    SettingsChart();
                     loggerMainForm.Info($"Отрисованы точки на графике и настроено отображение");
                 }
             }
@@ -213,8 +221,37 @@ namespace Client_WebSocket
 
         private void SettingsChart()
         {
+            if (chartPrintData.Legends.Count == 0)
+            {
+                chartPrintData.Legends.Add(new Legend());
+            }
+    
+            var legend = chartPrintData.Legends[0];
+            legend.Enabled = true;
+            legend.Docking = Docking.Bottom;
+            legend.Alignment = StringAlignment.Center;
+            legend.LegendStyle = LegendStyle.Table;
+    
+            legend.BackColor = Color.White;
+            legend.BorderColor = Color.LightGray;
+            legend.BorderWidth = 1;
+            legend.BorderDashStyle = ChartDashStyle.Solid;
+            legend.Font = new Font("Times New Roman", 9f);
+            legend.Title = "Валюты";
+    
+            legend.Position.Auto = false;
+            legend.Position.X = 10; // Отступ слева в %
+            legend.Position.Y = 70; // Позиция от верха в % (90% - почти внизу)
+            legend.Position.Width = 80;
+            legend.Position.Height = 30;
+    
+            legend.TableStyle = LegendTableStyle.Wide;
+            legend.HeaderSeparator = LegendSeparatorStyle.Line;
+            legend.HeaderSeparatorColor = Color.Gray;
+            
             var chGraphAreas = chartPrintData.ChartAreas[0];
-
+            chGraphAreas.Position.Height = 70;
+            
             //отключаем автоматическое положение начала отсчета и задаем интервалы
             chGraphAreas.AxisX.IsMarginVisible = false;
             chGraphAreas.AxisX.Minimum = timeWorkingDateStart.ToOADate();

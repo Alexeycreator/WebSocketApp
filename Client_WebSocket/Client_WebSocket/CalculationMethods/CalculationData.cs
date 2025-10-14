@@ -16,9 +16,9 @@ namespace Client_WebSocket.CalculationMethods
         private DateTime timeWorkingDateEnd;
         private int sleepTime;
         private SettingsClient settingsClient;
-        private List<BankModel> bankDatas = new List<BankModel>();
         private BankParser bankParser = new BankParser();
         private DefaultParser defaultParser = new DefaultParser();
+        private List<BankModel> parserData = new List<BankModel>();
         private bool connected;
         public event Action<List<ResponseBankModel>> DataResponse;
 
@@ -33,6 +33,7 @@ namespace Client_WebSocket.CalculationMethods
             timeWorkingDateStart = timeStart;
             timeWorkingDateEnd = timeEnd;
             settingsClient = new SettingsClient();
+            settingsClient.DataResponse += OnDataResponse;
             connected = isConnected;
         }
 
@@ -42,23 +43,24 @@ namespace Client_WebSocket.CalculationMethods
             {
                 var workHours = timeWorkingDateEnd - timeWorkingDateStart;
                 var totalHours = (int)workHours.TotalHours;
+                parserData.Clear();
                 if (DateTime.Now >= timeWorkingDateStart && DateTime.Now <= timeWorkingDateEnd)
                 {
                     await Task.Run(async () =>
                     {
-                        Stopwatch runTime = Stopwatch.StartNew();
+                        //Stopwatch runTime = Stopwatch.StartNew();
                         loggerCalculationData.Info($"Запуск потока парсера данных");
                         for (var i = 1; i <= totalHours; i++)
                         {
                             loggerCalculationData.Info($"Получение данных {i} из {totalHours}");
-                            var parserData =
-                                connected ? bankParser.CentralBankParser() : defaultParser.GetDefaultValue();
+                            parserData = connected ? bankParser.CentralBankParser() : defaultParser.GetDefaultValue();
 
                             if (parserData.Count > 0)
                             {
                                 loggerCalculationData.Info($"Данные {i} запроса успешно получены");
-                                runTime.Stop();
-                                await settingsClient.StartAsync(parserData, sleepTime, TimeSpan.FromMilliseconds(runTime.ElapsedMilliseconds));
+                                //runTime.Stop();
+                                await settingsClient.StartAsync(parserData,
+                                    sleepTime /*, TimeSpan.FromMilliseconds(runTime.ElapsedMilliseconds)*/);
 
                                 if (i < totalHours)
                                 {
@@ -85,6 +87,11 @@ namespace Client_WebSocket.CalculationMethods
             {
                 loggerCalculationData.Error($"{ex.Message}");
             }
+        }
+
+        private void OnDataResponse(List<ResponseBankModel> responseModels)
+        {
+            DataResponse?.Invoke(responseModels);
         }
     }
 }

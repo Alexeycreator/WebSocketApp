@@ -18,6 +18,7 @@ namespace Client_WebSocket.CentralBank
 
         private readonly HttpClient httpClient = new HttpClient();
         private const int countColumns = 5;
+        private List<BankModel> bankModels = new List<BankModel>();
 
         public List<BankModel> CentralBankParser()
         {
@@ -27,9 +28,9 @@ namespace Client_WebSocket.CentralBank
         private List<BankModel> GetRate()
         {
             loggerBankParser.Info("Процесс получения курса валют запущен...");
-            var bankModels = new List<BankModel>();
             try
             {
+                bankModels.Clear();
                 loggerBankParser.Info($"Подключение к данным по адресу: {urlCentralbank}");
                 var httpResponseMessage = httpClient.GetAsync(urlCentralbank).Result;
                 if (httpResponseMessage.IsSuccessStatusCode)

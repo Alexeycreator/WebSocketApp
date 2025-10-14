@@ -44,27 +44,34 @@ namespace Client_WebSocket.CentralBank
 
         private List<BankModel> ImitationRate()
         {
+            defaultRates.Clear();
             loggerDefaultParser.Info("Процесс получения имитированных курсов валют запущен...");
             try
             {
-                digitalCode = new int[letterCodes.Length];
-                for (int i = 0; i < letterCodes.Length; i++)
+                if (digitalCode == null)
                 {
-                    digitalCode[i] = random.Next(000, 999);
-                    for (int j = 0; j < i; j++)
+                    digitalCode = new int[letterCodes.Length];
+                    for (int i = 0; i < letterCodes.Length; i++)
                     {
-                        if (digitalCode[j] == digitalCode[i])
+                        digitalCode[i] = random.Next(000, 999);
+                        for (int j = 0; j < i; j++)
                         {
-                            digitalCode[i] = random.Next(000, 999);
+                            if (digitalCode[j] == digitalCode[i])
+                            {
+                                digitalCode[i] = random.Next(000, 999);
+                            }
                         }
                     }
                 }
 
 
-                units = new int[letterCodes.Length];
-                for (int i = 0; i < letterCodes.Length; i++)
+                if (units == null)
                 {
-                    units[i] = random.Next(1, 2);
+                    units = new int[letterCodes.Length];
+                    for (int i = 0; i < letterCodes.Length; i++)
+                    {
+                        units[i] = random.Next(1, 2);
+                    }
                 }
 
                 double[] rate = new double[letterCodes.Length];

@@ -19,12 +19,12 @@ public class SettingsServer
     private TcpListener tcpListener;
     private List<ResponseDataModel> responseDatas = new List<ResponseDataModel>();
     private List<CopyingDataModel> copyingDatas = new List<CopyingDataModel>();
+    private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
 
     public SettingsServer(IConfiguration _configuration)
     {
         config = _configuration.GetSection("ServerSettings").Get<ServerConfig>() ?? new ServerConfig();
     }
-
 
     public void Start()
     {
@@ -50,13 +50,12 @@ public class SettingsServer
                 tcpListener.Start();
                 loggerSettingsServer.Info($"Сервер запущен по ip:{ip} port:{port}");
                 Console.WriteLine($"Ожидание подключений...");
-                loggerSettingsServer.Info($"Создание отдельного потока для клиента");
-                Thread incomingThread = new Thread(() => { IncomingConnection(tcpListener); });
-                incomingThread.Start();
+                _ = AcceptClientsAsync(cancellationTokenSource.Token);
+                Console.WriteLine("Нажмите любую клавишу для остановки сервера...");
                 Console.ReadKey();
+                cancellationTokenSource.Cancel();
                 tcpListener.Stop();
                 loggerSettingsServer.Info("Сервер остановлен.");
-                //CheckClosedServer();
             }
         }
         catch (ArgumentOutOfRangeException ex)
@@ -71,22 +70,27 @@ public class SettingsServer
         }
     }
 
-    private void IncomingConnection(TcpListener tcpListener)
+    private async Task AcceptClientsAsync(CancellationToken cancellationToken)
     {
         try
         {
-            while (DateTime.Now >= timeWorkingDateStart && DateTime.Now <= timeWorkingDateEnd)
+            while (!cancellationToken.IsCancellationRequested &&
+                   DateTime.Now >= timeWorkingDateStart &&
+                   DateTime.Now <= timeWorkingDateEnd)
             {
-                TcpClient client = tcpListener.AcceptTcpClient();
-                Console.WriteLine($"Клиент {client.Client.RemoteEndPoint} подключен");
-                loggerSettingsServer.Info($"Клиент {client.Client.RemoteEndPoint} подключен");
-                Thread clientThread = new Thread(() => HandleClientAsync(client));
-                clientThread.Start();
+                TcpClient client = await tcpListener.AcceptTcpClientAsync(cancellationToken);
+                loggerSettingsServer.Info($"Новое подключение от {client.Client.RemoteEndPoint}");
+                _ = Task.Run(() => HandleClientAsync(client), cancellationToken);
+                loggerSettingsServer.Info($"Запущена задача для клиента");
             }
+        }
+        catch (OperationCanceledException)
+        {
+            loggerSettingsServer.Info("Сервер остановлен по запросу пользователя");
         }
         catch (Exception ex)
         {
-            loggerSettingsServer.Error($"{ex.Message}");
+            loggerSettingsServer.Error($"Ошибка в AcceptClientsAsync: {ex.Message}");
         }
     }
 
@@ -101,10 +105,9 @@ public class SettingsServer
                 string receivedData;
                 byte[] lengthBuffer = new byte[4];
                 int lengthBytesRead = 0;
-
                 while (lengthBytesRead < 4)
                 {
-                    int read = stream.Read(lengthBuffer, lengthBytesRead, 4 - lengthBytesRead);
+                    int read = await stream.ReadAsync(lengthBuffer, lengthBytesRead, 4 - lengthBytesRead);
                     if (read == 0)
                     {
                         throw new IOException($"Соединение закрыто клиентом");
@@ -122,7 +125,7 @@ public class SettingsServer
                     while (totalBytesRead < messageLength)
                     {
                         int bytesToRead = Math.Min(buffer.Length, messageLength - totalBytesRead);
-                        int bytesRead = stream.Read(buffer, 0, bytesToRead);
+                        int bytesRead = await stream.ReadAsync(buffer, 0, bytesToRead);
                         if (bytesRead == 0)
                         {
                             throw new IOException($"Соединение закрыто клиентом");
@@ -138,8 +141,10 @@ public class SettingsServer
 
                 loggerSettingsServer.Info($"Получены данные: {receivedData}");
                 Console.WriteLine($"Получены данные от клиента\nОбработка...");
-                List<BankModel> processedData = await Task.Run(() =>
+                var processedData = await Task.Run(() =>
                 {
+                    responseDatas.Clear(); 
+                    //copyingDatas.Clear();
                     CalculationData calculationData =
                         new CalculationData(responseDatas, copyingDatas /*, csvWriter*/);
                     return calculationData.ProcessData(receivedData);
@@ -148,19 +153,26 @@ public class SettingsServer
                 string responseJson = JsonConvert.SerializeObject(processedData);
                 byte[] responseDataBytes = Encoding.UTF8.GetBytes(responseJson);
                 byte[] lengthBytes = BitConverter.GetBytes(responseDataBytes.Length);
-                stream.Write(lengthBytes, 0, lengthBytes.Length);
-                stream.Write(responseDataBytes, 0, responseDataBytes.Length);
+                await stream.WriteAsync(lengthBytes, 0, lengthBytes.Length);
+                await stream.WriteAsync(responseDataBytes, 0, responseDataBytes.Length);
                 Console.WriteLine($"Данные отправлены обратно клиенту");
-                loggerSettingsServer.Info($"Отправлены обработанные данные: {processedData}");
+                Console.WriteLine("\nНажмите любую клавишу для остановки сервера...");
+                loggerSettingsServer.Info($"Отправлены обработанные данные клиенту");
             }
         }
         catch (IOException ex)
         {
-            loggerSettingsServer.Error($"{ex.Message}");
+            loggerSettingsServer.Error($"Ошибка ввода-вывода: {ex.Message}");
         }
         catch (Exception ex)
         {
-            loggerSettingsServer.Error($"{ex.Message}");
+            loggerSettingsServer.Error($"Ошибка обработки клиента: {ex.Message}");
         }
+    }
+
+    public void Stop()
+    {
+        cancellationTokenSource?.Cancel();
+        tcpListener?.Stop();
     }
 }

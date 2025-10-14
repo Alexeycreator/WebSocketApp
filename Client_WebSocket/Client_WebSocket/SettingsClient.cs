@@ -20,7 +20,7 @@ namespace Client_WebSocket
         public event Action<List<ResponseBankModel>> DataResponse;
 
 
-        public async Task StartAsync(List<BankModel> dataToSend, int sleepTime, TimeSpan runTime)
+        public async Task StartAsync(List<BankModel> dataToSend, int sleepTime/*, TimeSpan runTime*/)
         {
             string serverIp = ConfigurationManager.AppSettings["ip"];
             string serverPort = ConfigurationManager.AppSettings["port"];
@@ -28,11 +28,11 @@ namespace Client_WebSocket
             {
                 loggerSettingsClient.Info($"Запуск клиента");
                 Task.Run(() => ProcessRequestsLoopAsync(dataToSend, sleepTime, serverIp, Convert.ToInt32(serverPort)));
-                if (sleepTime > runTime.TotalMilliseconds)
+                /*if (sleepTime > runTime.TotalMilliseconds)
                 {
                     int remainingDelay = sleepTime - (int)runTime.TotalMilliseconds;
-                    await Task.Delay(remainingDelay);
-                }
+                    //await Task.Delay(remainingDelay);
+                }*/
             }
             catch (Exception ex)
             {
@@ -63,8 +63,6 @@ namespace Client_WebSocket
                         loggerSettingsClient.Info($"Получено {response.Count} записей с сервера");
                         DataResponse?.Invoke(response);
                     }
-
-                    loggerSettingsClient.Info("Запрос успешно обработан, соединение будет закрыто");
                 }
             }
             catch (OperationCanceledException)
@@ -79,8 +77,6 @@ namespace Client_WebSocket
             {
                 loggerSettingsClient.Error($"Ошибка при обработке запроса: {ex.Message}");
             }
-
-            loggerSettingsClient.Info("Цикл обработки запросов завершен");
         }
 
         private async Task<List<ResponseBankModel>> ReceiveSingleResponseAsync(NetworkStream stream)
