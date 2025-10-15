@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Configuration;
-using System.Diagnostics;
 using System.IO;
 using System.Net.Sockets;
 using System.Text;
@@ -137,6 +136,11 @@ namespace Client_WebSocket
                 catch (JsonException jsonEx)
                 {
                     loggerSettingsClient.Error($"Ошибка десериализации: {jsonEx.Message}");
+                    return null;
+                }
+                catch (Exception ex)
+                {
+                    loggerSettingsClient.Error($"{ex.Message}");
                     return null;
                 }
             }
